@@ -6126,36 +6126,11 @@ var $elm$http$Http$get = function (r) {
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
 var $elm$json$Json$Decode$list = _Json_decodeList;
-var $author$project$Main$Person = function (id) {
-	return function (name) {
-		return function (tagline) {
-			return function (first_brewed) {
-				return function (description) {
-					return function (image_url) {
-						return function (volumeValue) {
-							return function (volumeUnit) {
-								return function (contributed_by) {
-									return function (ingredients) {
-										return {contributed_by: contributed_by, description: description, first_brewed: first_brewed, id: id, image_url: image_url, ingredients: ingredients, name: name, tagline: tagline, volumeUnit: volumeUnit, volumeValue: volumeValue};
-									};
-								};
-							};
-						};
-					};
-				};
-			};
-		};
-	};
-};
-var $author$project$Main$Malt = F2(
-	function (name, amount) {
-		return {amount: amount, name: name};
+var $author$project$Main$Person = F9(
+	function (id, name, tagline, first_brewed, description, image_url, volumeValue, volumeUnit, contributed_by) {
+		return {contributed_by: contributed_by, description: description, first_brewed: first_brewed, id: id, image_url: image_url, name: name, tagline: tagline, volumeUnit: volumeUnit, volumeValue: volumeValue};
 	});
-var $author$project$Main$Amount = F2(
-	function (value, unit) {
-		return {unit: unit, value: value};
-	});
-var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
@@ -6165,26 +6140,6 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 			A2($elm$json$Json$Decode$field, key, valDecoder),
 			decoder);
 	});
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Main$ingredientsMaltAmountDecoder = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'unit',
-	$elm$json$Json$Decode$string,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'value',
-		$elm$json$Json$Decode$float,
-		$elm$json$Json$Decode$succeed($author$project$Main$Amount)));
-var $author$project$Main$ingredientsMaltDecoder = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'amount',
-	$author$project$Main$ingredientsMaltAmountDecoder,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'name',
-		$elm$json$Json$Decode$string,
-		$elm$json$Json$Decode$succeed($author$project$Main$Malt)));
-var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
@@ -6196,49 +6151,46 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt = F3(
 			A2($elm$json$Json$Decode$at, path, valDecoder),
 			decoder);
 	});
+var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Main$personParser = A3(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'ingredients',
-	$elm$json$Json$Decode$list($author$project$Main$ingredientsMaltDecoder),
+	'contributed_by',
+	$elm$json$Json$Decode$string,
 	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'contributed_by',
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+		_List_fromArray(
+			['volume', 'unit']),
 		$elm$json$Json$Decode$string,
 		A3(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 			_List_fromArray(
-				['volume', 'unit']),
-			$elm$json$Json$Decode$string,
+				['volume', 'value']),
+			$elm$json$Json$Decode$int,
 			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-				_List_fromArray(
-					['volume', 'value']),
-				$elm$json$Json$Decode$int,
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'image_url',
+				$elm$json$Json$Decode$string,
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'image_url',
+					'description',
 					$elm$json$Json$Decode$string,
 					A3(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'description',
+						'first_brewed',
 						$elm$json$Json$Decode$string,
 						A3(
 							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'first_brewed',
+							'tagline',
 							$elm$json$Json$Decode$string,
 							A3(
 								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-								'tagline',
+								'name',
 								$elm$json$Json$Decode$string,
 								A3(
 									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-									'name',
-									$elm$json$Json$Decode$string,
-									A3(
-										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-										'id',
-										$elm$json$Json$Decode$int,
-										$elm$json$Json$Decode$succeed($author$project$Main$Person)))))))))));
+									'id',
+									$elm$json$Json$Decode$int,
+									$elm$json$Json$Decode$succeed($author$project$Main$Person))))))))));
 var $author$project$Main$peopleParser = $elm$json$Json$Decode$list($author$project$Main$personParser);
 var $author$project$Main$loadPeople = $elm$http$Http$get(
 	{
