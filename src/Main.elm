@@ -40,7 +40,8 @@ type alias Person =
     , volumeValue : Int
     , volumeUnit : String
     , contributed_by : String
-    , ingredients : List Malt
+
+    -- , ingredients : List Malt
     }
 
 
@@ -94,7 +95,11 @@ personParser =
         |> JDP.requiredAt [ "volume", "value" ] JD.int
         |> JDP.requiredAt [ "volume", "unit" ] JD.string
         |> JDP.required "contributed_by" JD.string
-        |> JDP.required "ingredients" (JD.list ingredientsMaltDecoder)
+
+
+
+-- |> JDP.required "ingredients" (JD.list ingredientsMaltDecoder)
+--
 
 
 peopleParser : JD.Decoder People
