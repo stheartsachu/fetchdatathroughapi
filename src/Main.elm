@@ -2,18 +2,19 @@ module Main exposing (..)
 
 import Browser
 import Debug exposing (toString)
-import Html exposing (button, div, h1, li, table, td, text, th, tr, ul)
+import Html exposing (b, button, div, h1, img, li, table, td, text, th, tr, ul)
+import Html.Attributes exposing (height, src, style, width)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as JD
-import Json.Decode.Pipeline as JDP exposing (required)
+import Json.Decode.Pipeline as JDP
 
 
 type Model
     = Ready
     | Loading
-    | PeopleLoaded People
-    | PeopleLoadFailed
+    | BrewerDetails (List Brewer)
+    | BrewerDetailsLoadFailed
 
 
 init : () -> ( Model, Cmd Msg )
@@ -23,25 +24,21 @@ init _ =
 
 type Msg
     = Noop
-    | GetPeople
-    | GotPeople (Result Http.Error People)
+    | LoadBrewerData
+    | BrewersDataGetOrNot (Result Http.Error (List Brewer))
 
 
-type alias People =
-    List Person
-
-
-type alias Person =
+type alias Brewer =
     { id : Int
     , name : String
     , tagline : String
-    , first_brewed : String
+    , firstBrewed : String
     , description : String
-    , image_url : String
+    , imageUrl : String
     , volumeValue : Int
     , volumeUnit : String
-    , contributed_by : String
-    , ingredients_yeast : String
+    , contributedBy : String
+    , ingredients : Ingredients
     }
 
 
@@ -57,9 +54,19 @@ type alias Malt =
     }
 
 
+type alias Hops =
+    { name : String
+    , amount : Amount
+    , add : String
+    , attribute : String
+    }
 
--- type alias IngredientsMalt =
---     List Malt
+
+type alias Ingredients =
+    { malts : List Malt
+    , hops : List Hops
+    , yeast : String
+    }
 
 
 ingredientsMaltAmountDecoder : JD.Decoder Amount
@@ -76,16 +83,26 @@ ingredientsMaltDecoder =
         |> JDP.required "amount" ingredientsMaltAmountDecoder
 
 
+ingredientsHopsDecoder : JD.Decoder Hops
+ingredientsHopsDecoder =
+    JD.succeed Hops
+        |> JDP.required "name" JD.string
+        |> JDP.required "amount" ingredientsMaltAmountDecoder
+        |> JDP.required "add" JD.string
+        |> JDP.required "attribute" JD.string
 
--- ingredientsMaltDecoderParser : JD.Decoder IngredientsMalt
--- ingredientsMaltDecoderParser =
---     JD.list ingredientsMaltDecoder
------------------------------------------
+
+ingredientsDecoder : JD.Decoder Ingredients
+ingredientsDecoder =
+    JD.succeed Ingredients
+        |> JDP.required "malt" (JD.list ingredientsMaltDecoder)
+        |> JDP.required "hops" (JD.list ingredientsHopsDecoder)
+        |> JDP.required "yeast" JD.string
 
 
-personParser : JD.Decoder Person
-personParser =
-    JD.succeed Person
+brewerParser : JD.Decoder Brewer
+brewerParser =
+    JD.succeed Brewer
         |> JDP.required "id" JD.int
         |> JDP.required "name" JD.string
         |> JDP.required "tagline" JD.string
@@ -95,16 +112,7 @@ personParser =
         |> JDP.requiredAt [ "volume", "value" ] JD.int
         |> JDP.requiredAt [ "volume", "unit" ] JD.string
         |> JDP.required "contributed_by" JD.string
-        |> JDP.requiredAt [ "ingredients", "yeast" ] JD.string
-
-
-
---
-
-
-peopleParser : JD.Decoder People
-peopleParser =
-    JD.list personParser
+        |> JDP.required "ingredients" ingredientsDecoder
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -113,26 +121,26 @@ update msg model =
         Noop ->
             ( model, Cmd.none )
 
-        GetPeople ->
-            ( Loading, loadPeople )
+        LoadBrewerData ->
+            ( Loading, loadBrewer )
 
-        GotPeople result ->
+        BrewersDataGetOrNot result ->
             case result of
                 Err err ->
                     let
                         _ =
                             Debug.log "check" err
                     in
-                    ( PeopleLoadFailed, Cmd.none )
+                    ( BrewerDetailsLoadFailed, Cmd.none )
 
-                Ok people ->
-                    ( PeopleLoaded people, Cmd.none )
+                Ok brewer ->
+                    ( BrewerDetails brewer, Cmd.none )
 
 
-loadPeople =
+loadBrewer =
     Http.get
         { url = "https://api.punkapi.com/v2/beers"
-        , expect = Http.expectJson GotPeople peopleParser
+        , expect = Http.expectJson BrewersDataGetOrNot (JD.list brewerParser)
         }
 
 
@@ -140,12 +148,12 @@ view : Model -> Html.Html Msg
 view model =
     div []
         [ h1 [] [ text "Use the api and display the information" ]
-        , button [ onClick GetPeople ] [ text "Reload" ]
-        , peopleTable model
+        , button [ onClick LoadBrewerData ] [ text "Reload" ]
+        , brewerTable model
         ]
 
 
-peopleTable model =
+brewerTable model =
     case model of
         Ready ->
             div [] [ text "Click Here to fetch the Brewer Data" ]
@@ -153,54 +161,84 @@ peopleTable model =
         Loading ->
             div [] [ text "Loading.." ]
 
-        PeopleLoaded people ->
+        BrewerDetails brewer ->
             table []
-                (newFunction people)
+                (newFunction brewer)
 
-        PeopleLoadFailed ->
+        BrewerDetailsLoadFailed ->
             div [] [ text "Failed" ]
 
 
-newFunction2 malt =
-    List.map (\m -> li [] [ text m.name ]) malt
-
-
-newFunction : People -> List (Html.Html msg)
-newFunction people =
+newFunction : List Brewer -> List (Html.Html msg)
+newFunction brewers =
     [ tr []
         [ th [] [ text "Brewer-Id" ]
         , th [] [ text "Name" ]
         , th [] [ text "Tagline" ]
         , th [] [ text "First Brewed" ]
         , th [] [ text "Description" ]
-        , th [] [ text "Image url" ]
+        , th [] [ text "Image" ]
         , th [] [ text "Volume" ]
         , th [] [ text "Contributed by" ]
-        , th [] [ text "Ingredients" ]
+        , th [] [ text "Ingredients: Malts" ]
+        , th [] [ text "Ingredients: Hops" ]
+        , th [] [ text "Ingredients: Yeast" ]
         ]
     ]
         ++ List.map
-            (\person ->
+            (\brewer ->
                 tr []
-                    [ td [] [ text (String.fromInt person.id) ]
-                    , td [] [ text person.name ]
-                    , td [] [ text person.tagline ]
-                    , td [] [ text person.first_brewed ]
-                    , td [] [ text person.description ]
-                    , td [] [ text person.image_url ]
-                    , tr []
-                        [ td [] [ text ("Unit:" ++ person.volumeUnit) ]
-                        , td [] [ text ("Value:" ++ String.fromInt person.volumeValue) ]
-                        ]
-                    , td [] [ text person.contributed_by ]
+                    [ td [] [ text (String.fromInt brewer.id) ]
+                    , td [] [ text brewer.name ]
+                    , td [] [ text brewer.tagline ]
+                    , td [] [ text brewer.firstBrewed ]
+                    , td [] [ text brewer.description ]
+                    , td [ style "height" "50px" ] [ img [ src brewer.imageUrl, height 100, width 50 ] [] ]
                     , td []
-                        [ ul []
-                            [ li [] [ text person.ingredients_yeast ]
-                            ]
+                        [ td [] [ text ("Unit:" ++ brewer.volumeUnit) ]
+                        , td [] [ text ("Value:" ++ String.fromInt brewer.volumeValue) ]
                         ]
+                    , td [] [ text brewer.contributedBy ]
+                    , td [] [ maltrender brewer.ingredients.malts ]
+                    , td [] [ hopsrendser brewer.ingredients.hops ]
+                    , td [] [ text brewer.ingredients.yeast ]
                     ]
             )
-            people
+            brewers
+
+
+hopsrendser : List Hops -> Html.Html msg
+hopsrendser lst =
+    ul []
+        (List.map
+            (\element ->
+                li []
+                    [ li [] [ text ("name : " ++ element.name) ]
+                    , li [] [ text ("add :  " ++ element.add) ]
+                    , li [] [ text ("attribute : " ++ element.attribute) ]
+                    , li [] [ text ("amount Unit : " ++ element.amount.unit) ]
+                    , li [] [ text ("amount value : " ++ toString element.amount.value) ]
+                    , li [ style "listStyle" "none" ] [ b [] [ text "New Ingredients: Hops" ] ]
+                    ]
+            )
+            lst
+        )
+
+
+maltrender : List Malt -> Html.Html msg
+maltrender lst =
+    ul []
+        (List.map
+            (\element ->
+                li []
+                    [ li [] [ text ("name : " ++ element.name) ]
+                    , li [] [ text ("amount Unit : " ++ element.amount.unit) ]
+                    , li [] [ text ("amount value : " ++ toString element.amount.value) ]
+                    , li [ style "listStyle" "none" ] [ b [] [ text "New Ingredients: Malts---" ] ]
+                    ]
+            )
+            lst
+        )
 
 
 subscriptions : Model -> Sub Msg
