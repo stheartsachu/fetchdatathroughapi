@@ -1,7 +1,8 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (button, div, h1, li, table, td, text, th, tr)
+import Debug exposing (toString)
+import Html exposing (button, div, h1, li, table, td, text, th, tr, ul)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as JD
@@ -40,8 +41,7 @@ type alias Person =
     , volumeValue : Int
     , volumeUnit : String
     , contributed_by : String
-
-    -- , ingredients : List Malt
+    , ingredients_yeast : String
     }
 
 
@@ -80,7 +80,7 @@ ingredientsMaltDecoder =
 -- ingredientsMaltDecoderParser : JD.Decoder IngredientsMalt
 -- ingredientsMaltDecoderParser =
 --     JD.list ingredientsMaltDecoder
--------------------------------------------
+-----------------------------------------
 
 
 personParser : JD.Decoder Person
@@ -95,10 +95,10 @@ personParser =
         |> JDP.requiredAt [ "volume", "value" ] JD.int
         |> JDP.requiredAt [ "volume", "unit" ] JD.string
         |> JDP.required "contributed_by" JD.string
+        |> JDP.requiredAt [ "ingredients", "yeast" ] JD.string
 
 
 
--- |> JDP.required "ingredients" (JD.list ingredientsMaltDecoder)
 --
 
 
@@ -161,6 +161,10 @@ peopleTable model =
             div [] [ text "Failed" ]
 
 
+newFunction2 malt =
+    List.map (\m -> li [] [ text m.name ]) malt
+
+
 newFunction : People -> List (Html.Html msg)
 newFunction people =
     [ tr []
@@ -189,7 +193,11 @@ newFunction people =
                         , td [] [ text ("Value:" ++ String.fromInt person.volumeValue) ]
                         ]
                     , td [] [ text person.contributed_by ]
-                    , td [] [ text "sasa" ]
+                    , td []
+                        [ ul []
+                            [ li [] [ text person.ingredients_yeast ]
+                            ]
+                        ]
                     ]
             )
             people
