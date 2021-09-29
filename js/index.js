@@ -5330,14 +5330,166 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
+var $author$project$Main$BrewerDetails = function (a) {
+	return {$: 'BrewerDetails', a: a};
+};
+var $author$project$Main$BrewerDetailsLoadFailed = {$: 'BrewerDetailsLoadFailed'};
 var $author$project$Main$Loading = {$: 'Loading'};
-var $author$project$Main$PeopleLoadFailed = {$: 'PeopleLoadFailed'};
-var $author$project$Main$PeopleLoaded = function (a) {
-	return {$: 'PeopleLoaded', a: a};
+var $author$project$Main$BrewersDataGetOrNot = function (a) {
+	return {$: 'BrewersDataGetOrNot', a: a};
 };
-var $author$project$Main$GotPeople = function (a) {
-	return {$: 'GotPeople', a: a};
+var $author$project$Main$Brewer = function (id) {
+	return function (name) {
+		return function (tagline) {
+			return function (firstBrewed) {
+				return function (description) {
+					return function (imageUrl) {
+						return function (volumeValue) {
+							return function (volumeUnit) {
+								return function (contributedBy) {
+									return function (ingredients) {
+										return {contributedBy: contributedBy, description: description, firstBrewed: firstBrewed, id: id, imageUrl: imageUrl, ingredients: ingredients, name: name, tagline: tagline, volumeUnit: volumeUnit, volumeValue: volumeValue};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
 };
+var $author$project$Main$Ingredients = F3(
+	function (malts, hops, yeast) {
+		return {hops: hops, malts: malts, yeast: yeast};
+	});
+var $author$project$Main$Hops = F4(
+	function (name, amount, add, attribute) {
+		return {add: add, amount: amount, attribute: attribute, name: name};
+	});
+var $author$project$Main$Amount = F2(
+	function (value, unit) {
+		return {unit: unit, value: value};
+	});
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$field, key, valDecoder),
+			decoder);
+	});
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$Main$ingredientsMaltAmountDecoder = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'unit',
+	$elm$json$Json$Decode$string,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'value',
+		$elm$json$Json$Decode$float,
+		$elm$json$Json$Decode$succeed($author$project$Main$Amount)));
+var $author$project$Main$ingredientsHopsDecoder = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'attribute',
+	$elm$json$Json$Decode$string,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'add',
+		$elm$json$Json$Decode$string,
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'amount',
+			$author$project$Main$ingredientsMaltAmountDecoder,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'name',
+				$elm$json$Json$Decode$string,
+				$elm$json$Json$Decode$succeed($author$project$Main$Hops)))));
+var $author$project$Main$Malt = F2(
+	function (name, amount) {
+		return {amount: amount, name: name};
+	});
+var $author$project$Main$ingredientsMaltDecoder = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'amount',
+	$author$project$Main$ingredientsMaltAmountDecoder,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'name',
+		$elm$json$Json$Decode$string,
+		$elm$json$Json$Decode$succeed($author$project$Main$Malt)));
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $author$project$Main$ingredientsDecoder = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'yeast',
+	$elm$json$Json$Decode$string,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'hops',
+		$elm$json$Json$Decode$list($author$project$Main$ingredientsHopsDecoder),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'malt',
+			$elm$json$Json$Decode$list($author$project$Main$ingredientsMaltDecoder),
+			$elm$json$Json$Decode$succeed($author$project$Main$Ingredients))));
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt = F3(
+	function (path, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$at, path, valDecoder),
+			decoder);
+	});
+var $author$project$Main$brewerParser = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'ingredients',
+	$author$project$Main$ingredientsDecoder,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'contributed_by',
+		$elm$json$Json$Decode$string,
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+			_List_fromArray(
+				['volume', 'unit']),
+			$elm$json$Json$Decode$string,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+				_List_fromArray(
+					['volume', 'value']),
+				$elm$json$Json$Decode$int,
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'image_url',
+					$elm$json$Json$Decode$string,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'description',
+						$elm$json$Json$Decode$string,
+						A3(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+							'first_brewed',
+							$elm$json$Json$Decode$string,
+							A3(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+								'tagline',
+								$elm$json$Json$Decode$string,
+								A3(
+									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+									'name',
+									$elm$json$Json$Decode$string,
+									A3(
+										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+										'id',
+										$elm$json$Json$Decode$int,
+										$elm$json$Json$Decode$succeed($author$project$Main$Brewer)))))))))));
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
@@ -6125,76 +6277,12 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $elm$json$Json$Decode$list = _Json_decodeList;
-var $author$project$Main$Person = F9(
-	function (id, name, tagline, first_brewed, description, image_url, volumeValue, volumeUnit, contributed_by) {
-		return {contributed_by: contributed_by, description: description, first_brewed: first_brewed, id: id, image_url: image_url, name: name, tagline: tagline, volumeUnit: volumeUnit, volumeValue: volumeValue};
-	});
-var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
-var $elm$json$Json$Decode$field = _Json_decodeField;
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
-	function (key, valDecoder, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A2($elm$json$Json$Decode$field, key, valDecoder),
-			decoder);
-	});
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt = F3(
-	function (path, valDecoder, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A2($elm$json$Json$Decode$at, path, valDecoder),
-			decoder);
-	});
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Main$personParser = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'contributed_by',
-	$elm$json$Json$Decode$string,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-		_List_fromArray(
-			['volume', 'unit']),
-		$elm$json$Json$Decode$string,
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
-			_List_fromArray(
-				['volume', 'value']),
-			$elm$json$Json$Decode$int,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'image_url',
-				$elm$json$Json$Decode$string,
-				A3(
-					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'description',
-					$elm$json$Json$Decode$string,
-					A3(
-						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'first_brewed',
-						$elm$json$Json$Decode$string,
-						A3(
-							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'tagline',
-							$elm$json$Json$Decode$string,
-							A3(
-								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-								'name',
-								$elm$json$Json$Decode$string,
-								A3(
-									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-									'id',
-									$elm$json$Json$Decode$int,
-									$elm$json$Json$Decode$succeed($author$project$Main$Person))))))))));
-var $author$project$Main$peopleParser = $elm$json$Json$Decode$list($author$project$Main$personParser);
-var $author$project$Main$loadPeople = $elm$http$Http$get(
+var $author$project$Main$loadBrewer = $elm$http$Http$get(
 	{
-		expect: A2($elm$http$Http$expectJson, $author$project$Main$GotPeople, $author$project$Main$peopleParser),
+		expect: A2(
+			$elm$http$Http$expectJson,
+			$author$project$Main$BrewersDataGetOrNot,
+			$elm$json$Json$Decode$list($author$project$Main$brewerParser)),
 		url: 'https://api.punkapi.com/v2/beers'
 	});
 var $elm$core$Debug$log = _Debug_log;
@@ -6203,49 +6291,185 @@ var $author$project$Main$update = F2(
 		switch (msg.$) {
 			case 'Noop':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'GetPeople':
-				return _Utils_Tuple2($author$project$Main$Loading, $author$project$Main$loadPeople);
+			case 'LoadBrewerData':
+				return _Utils_Tuple2($author$project$Main$Loading, $author$project$Main$loadBrewer);
 			default:
 				var result = msg.a;
 				if (result.$ === 'Err') {
 					var err = result.a;
 					var _v2 = A2($elm$core$Debug$log, 'check', err);
-					return _Utils_Tuple2($author$project$Main$PeopleLoadFailed, $elm$core$Platform$Cmd$none);
+					return _Utils_Tuple2($author$project$Main$BrewerDetailsLoadFailed, $elm$core$Platform$Cmd$none);
 				} else {
-					var people = result.a;
+					var brewer = result.a;
 					return _Utils_Tuple2(
-						$author$project$Main$PeopleLoaded(people),
+						$author$project$Main$BrewerDetails(brewer),
 						$elm$core$Platform$Cmd$none);
 				}
 		}
 	});
-var $author$project$Main$GetPeople = {$: 'GetPeople'};
-var $elm$html$Html$button = _VirtualDom_node('button');
+var $author$project$Main$LoadBrewerData = {$: 'LoadBrewerData'};
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$html$Html$h1 = _VirtualDom_node('h1');
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
+var $elm$html$Html$Attributes$height = function (n) {
 	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
+		_VirtualDom_attribute,
+		'height',
+		$elm$core$String$fromInt(n));
 };
-var $elm$html$Html$td = _VirtualDom_node('td');
+var $elm$html$Html$b = _VirtualDom_node('b');
+var $elm$html$Html$li = _VirtualDom_node('li');
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$core$Debug$toString = _Debug_toString;
+var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $author$project$Main$hopsrendser = function (lst) {
+	return A2(
+		$elm$html$Html$ul,
+		_List_Nil,
+		A2(
+			$elm$core$List$map,
+			function (element) {
+				return A2(
+					$elm$html$Html$li,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('name : ' + element.name)
+								])),
+							A2(
+							$elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('add :  ' + element.add)
+								])),
+							A2(
+							$elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('attribute : ' + element.attribute)
+								])),
+							A2(
+							$elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('amount Unit : ' + element.amount.unit)
+								])),
+							A2(
+							$elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									'amount value : ' + $elm$core$Debug$toString(element.amount.value))
+								])),
+							A2(
+							$elm$html$Html$li,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'listStyle', 'none')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$b,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text('New Ingredients: Hops')
+										]))
+								]))
+						]));
+			},
+			lst));
+};
+var $elm$html$Html$img = _VirtualDom_node('img');
+var $author$project$Main$maltrender = function (lst) {
+	return A2(
+		$elm$html$Html$ul,
+		_List_Nil,
+		A2(
+			$elm$core$List$map,
+			function (element) {
+				return A2(
+					$elm$html$Html$li,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('name : ' + element.name)
+								])),
+							A2(
+							$elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('amount Unit : ' + element.amount.unit)
+								])),
+							A2(
+							$elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									'amount value : ' + $elm$core$Debug$toString(element.amount.value))
+								])),
+							A2(
+							$elm$html$Html$li,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'listStyle', 'none')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$b,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text('New Ingredients: Malts---')
+										]))
+								]))
+						]));
+			},
+			lst));
+};
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var $elm$html$Html$td = _VirtualDom_node('td');
 var $elm$html$Html$th = _VirtualDom_node('th');
 var $elm$html$Html$tr = _VirtualDom_node('tr');
-var $author$project$Main$newFunction = function (people) {
+var $elm$html$Html$Attributes$width = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'width',
+		$elm$core$String$fromInt(n));
+};
+var $author$project$Main$newFunction = function (brewers) {
 	return _Utils_ap(
 		_List_fromArray(
 			[
@@ -6294,7 +6518,7 @@ var $author$project$Main$newFunction = function (people) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								$elm$html$Html$text('Image url')
+								$elm$html$Html$text('Image')
 							])),
 						A2(
 						$elm$html$Html$th,
@@ -6315,13 +6539,27 @@ var $author$project$Main$newFunction = function (people) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								$elm$html$Html$text('Ingredients')
+								$elm$html$Html$text('Ingredients: Malts')
+							])),
+						A2(
+						$elm$html$Html$th,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Ingredients: Hops')
+							])),
+						A2(
+						$elm$html$Html$th,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Ingredients: Yeast')
 							]))
 					]))
 			]),
 		A2(
 			$elm$core$List$map,
-			function (person) {
+			function (brewer) {
 				return A2(
 					$elm$html$Html$tr,
 					_List_Nil,
@@ -6333,45 +6571,56 @@ var $author$project$Main$newFunction = function (people) {
 							_List_fromArray(
 								[
 									$elm$html$Html$text(
-									$elm$core$String$fromInt(person.id))
+									$elm$core$String$fromInt(brewer.id))
 								])),
 							A2(
 							$elm$html$Html$td,
 							_List_Nil,
 							_List_fromArray(
 								[
-									$elm$html$Html$text(person.name)
+									$elm$html$Html$text(brewer.name)
 								])),
 							A2(
 							$elm$html$Html$td,
 							_List_Nil,
 							_List_fromArray(
 								[
-									$elm$html$Html$text(person.tagline)
+									$elm$html$Html$text(brewer.tagline)
 								])),
 							A2(
 							$elm$html$Html$td,
 							_List_Nil,
 							_List_fromArray(
 								[
-									$elm$html$Html$text(person.first_brewed)
+									$elm$html$Html$text(brewer.firstBrewed)
 								])),
 							A2(
 							$elm$html$Html$td,
 							_List_Nil,
 							_List_fromArray(
 								[
-									$elm$html$Html$text(person.description)
+									$elm$html$Html$text(brewer.description)
 								])),
 							A2(
 							$elm$html$Html$td,
-							_List_Nil,
 							_List_fromArray(
 								[
-									$elm$html$Html$text(person.image_url)
+									A2($elm$html$Html$Attributes$style, 'height', '50px')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$img,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$src(brewer.imageUrl),
+											$elm$html$Html$Attributes$height(100),
+											$elm$html$Html$Attributes$width(50)
+										]),
+									_List_Nil)
 								])),
 							A2(
-							$elm$html$Html$tr,
+							$elm$html$Html$td,
 							_List_Nil,
 							_List_fromArray(
 								[
@@ -6380,7 +6629,7 @@ var $author$project$Main$newFunction = function (people) {
 									_List_Nil,
 									_List_fromArray(
 										[
-											$elm$html$Html$text('Unit:' + person.volumeUnit)
+											$elm$html$Html$text('Unit:' + brewer.volumeUnit)
 										])),
 									A2(
 									$elm$html$Html$td,
@@ -6388,7 +6637,7 @@ var $author$project$Main$newFunction = function (people) {
 									_List_fromArray(
 										[
 											$elm$html$Html$text(
-											'Value:' + $elm$core$String$fromInt(person.volumeValue))
+											'Value:' + $elm$core$String$fromInt(brewer.volumeValue))
 										]))
 								])),
 							A2(
@@ -6396,21 +6645,35 @@ var $author$project$Main$newFunction = function (people) {
 							_List_Nil,
 							_List_fromArray(
 								[
-									$elm$html$Html$text(person.contributed_by)
+									$elm$html$Html$text(brewer.contributedBy)
 								])),
 							A2(
 							$elm$html$Html$td,
 							_List_Nil,
 							_List_fromArray(
 								[
-									$elm$html$Html$text('sasa')
+									$author$project$Main$maltrender(brewer.ingredients.malts)
+								])),
+							A2(
+							$elm$html$Html$td,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$author$project$Main$hopsrendser(brewer.ingredients.hops)
+								])),
+							A2(
+							$elm$html$Html$td,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text(brewer.ingredients.yeast)
 								]))
 						]));
 			},
-			people));
+			brewers));
 };
 var $elm$html$Html$table = _VirtualDom_node('table');
-var $author$project$Main$peopleTable = function (model) {
+var $author$project$Main$brewerTable = function (model) {
 	switch (model.$) {
 		case 'Ready':
 			return A2(
@@ -6428,12 +6691,12 @@ var $author$project$Main$peopleTable = function (model) {
 					[
 						$elm$html$Html$text('Loading..')
 					]));
-		case 'PeopleLoaded':
-			var people = model.a;
+		case 'BrewerDetails':
+			var brewer = model.a;
 			return A2(
 				$elm$html$Html$table,
 				_List_Nil,
-				$author$project$Main$newFunction(people));
+				$author$project$Main$newFunction(brewer));
 		default:
 			return A2(
 				$elm$html$Html$div,
@@ -6443,6 +6706,25 @@ var $author$project$Main$peopleTable = function (model) {
 						$elm$html$Html$text('Failed')
 					]));
 	}
+};
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
 };
 var $author$project$Main$view = function (model) {
 	return A2(
@@ -6461,13 +6743,13 @@ var $author$project$Main$view = function (model) {
 				$elm$html$Html$button,
 				_List_fromArray(
 					[
-						$elm$html$Html$Events$onClick($author$project$Main$GetPeople)
+						$elm$html$Html$Events$onClick($author$project$Main$LoadBrewerData)
 					]),
 				_List_fromArray(
 					[
 						$elm$html$Html$text('Reload')
 					])),
-				$author$project$Main$peopleTable(model)
+				$author$project$Main$brewerTable(model)
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
